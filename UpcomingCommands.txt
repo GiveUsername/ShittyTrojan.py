@@ -1,0 +1,8 @@
+List of Upcoming Commands I hope to add to this Trojan:
+
+!spread - Clones and spreads the .exe file into other system directories (5 or less)
+!vpn - Shows all downloaded/active vpns / Syntax: !vpn [disable/show/delete]
+!filesearch - Searches for a specific file in the target computer / Syntax: !filesearch notepad.exe
+!keyboard - Disables/Enables Keyboard Input / Syntax: !keyboard [true/false]
+!mouse - Disables/Enables Mouse Input / Syntax: !mouse [true/false]
+!elevate - Elevates the program to a higher level / Syntax: !elevate [admin/System] (Admin is most likely required to elevate to System)

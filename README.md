@@ -21,6 +21,7 @@
 #### !info - Grabs information on the computer
 #### !geolocate - Attempts to find the geo-location of the computer (Sort of broken if VPN is active)
 #### !admincheck - Checks if the executable file has Administrator Permissions
+#### !token - Attempts to grab Discord Token (Semi-Broken?)
 
 ### MESSAGING:
 #### !message - Opens a message screen containing the given message / Syntax: !message Hello

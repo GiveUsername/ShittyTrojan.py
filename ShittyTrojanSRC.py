@@ -2,7 +2,7 @@
 
 # YOU MUST EDIT THESE LINES:
 # Line 47: Put your Bot Token in the '' section
-# Line 214: REPLACE the name syntax of "guild = discord.utils.get(bot.guilds, name='')" with the name of your server
+# Line 215: REPLACE the name syntax of "guild = discord.utils.get(bot.guilds, name='')" with the name of your server
 
 #---------------------------------------#
 #               IMPORTS                 #

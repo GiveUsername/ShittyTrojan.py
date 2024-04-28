@@ -1,7 +1,8 @@
 ###### WARNING: THIS TROJAN IS A DISCORD RAT. IT IS NOT A GUI RAT.
 ###### This is a simple DiscordRAT programmed in Python to test my skills as a Developer. This is for educational purposes and is not supposed to be used as a legitimate malware for windows computers
 ###### Below are the Commands and Update Log.
-###### For more information please go to https://airstrike.school/Socrates
+###### For more information please go to my [Info Page](https://airstrike.school/Socrates)
+###### To make a .exe build please visit the [Documentation](https://github.com/GiveUsername/ShittyTrojan.py/wiki)
 
 # Commands
 

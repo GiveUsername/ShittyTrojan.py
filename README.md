@@ -3,6 +3,7 @@
 ###### Below are the Commands and Update Log.
 ###### For more information please go to my [Info Page](https://airstrike.school/Socrates)
 ###### To make a .exe build please visit the [Documentation Wiki](https://github.com/GiveUsername/ShittyTrojan.py/wiki)
+###### If you want to see what I'm planning on adding next, click [here](https://github.com/GiveUsername/ShittyTrojan.py/wiki/Upcoming-Updates)
 
 # Commands
 

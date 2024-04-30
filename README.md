@@ -6,7 +6,7 @@
 ###### If you want to see what I'm planning on adding next, got to the [ShittyTrojan Trello](https://trello.com/b/ck9dFLnF/shittytrojan)
 ###### Currently FUD on Malwarebytes, SentinelOne, McAffee.
 ###### Detected on known AV's: Kaspersky, Avast, AVG, Microsoft, Sophos.
-###### [View VirusTotal Report](https://www.virustotal.com/gui/file/bf3306f6dcfa56a2f5f737b22a2ce82b5074f636762b19ab39dce171fde581f7/detection) (13/64 AntiVirus Flags)
+###### [View VirusTotal Report](https://www.virustotal.com/gui/file/bf3306f6dcfa56a2f5f737b22a2ce82b5074f636762b19ab39dce171fde581f7/detection) (13/64 AntiVirus Flags) (TESTED ON OLDER VERSION, NEW TEST SOON)
 
 # Commands
 

